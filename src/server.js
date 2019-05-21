@@ -2,6 +2,10 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import postChartHandle from './postChartHandle'
 import httpStatus from 'http-status'
+const isContentValid = (content) => (
+    content && `${content}`.trim()
+)
+
 const server = ({ port }) => {
     const app = express()
     //Here we are configuring express to use body-parser as middle-ware.
@@ -10,7 +14,13 @@ const server = ({ port }) => {
 
     app.post('/chart', (req, res) => {
         const { body } = req
-        const { content } = body
+        const { content } = body || {}
+        if(!isContentValid(content)){
+            res
+                .status(httpStatus.BAD_REQUEST)
+                .json({ message: `Chart content wasn't supplied` })
+        }
+
         postChartHandle({ content })
             .then(info => {
                 res.json(info)
